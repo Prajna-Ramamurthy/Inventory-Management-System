@@ -1,0 +1,102 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    ports:
+      - 5672:5672
+      - "15672:15672"
+    expose:
+      - "5672"
+      - "15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+    - rabbitmq_network
+
+
+  producer:
+    build:
+      context: .
+      dockerfile: producer/Dockerfile
+    depends_on:
+      - rabbitmq
+      - consumer_one
+      - consumer_two
+      - consumer_three
+      - consumer_four
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    ports:
+      - "5000:5000"
+    expose:
+      - "5000"
+    networks:  
+      - producer_network
+
+  consumer_one:
+    build:
+      context: .
+      dockerfile: consumer_one/Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - producer_network
+
+  consumer_two:
+    build:
+      context: .
+      dockerfile: consumer_two/Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - producer_network
+      
+  consumer_three:
+    build:
+      context: .
+      dockerfile: consumer_three/Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - producer_network
+         
+  consumer_four:
+    build:
+      context: .
+      dockerfile: consumer_four/Dockerfile
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: guest
+      RABBITMQ_PASSWORD: guest
+    networks:
+      - producer_network
+
+networks:
+  rabbitmq_network: 
+    driver: bridge
+  producer_network:
+    driver: bridge
+    
