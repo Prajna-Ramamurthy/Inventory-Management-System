@@ -18,7 +18,7 @@ def callback(ch, method, properties, body):
     if not connection.is_closed:
         print("Healthcheck is successful!")
     else:
-    	print("Healthcheck unsuccessful! Connection not found!")
+        print("Healthcheck unsuccessful! Connection not found!")
     ch.basic_ack(delivery_tag=method.delivery_tag)
     return "Healthcheck is done!"
 
