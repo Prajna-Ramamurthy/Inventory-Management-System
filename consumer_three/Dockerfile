@@ -6,4 +6,4 @@ COPY ./consumer_three .
 RUN pip install -r requirements.txt
 
 
-CMD [ "python", "deletion.py" ]
+CMD [ "python", "stock_management.py" ]
