@@ -1,14 +1,39 @@
-from flask import Flask
+import pika, json
 import time
-import pika
+import logging
 
-time.sleep(2)
+time.sleep(10)
 
-app = Flask(__name__)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='172.17.0.1'))
+# Set up the RabbitMQ connection
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='rabbitmq'))
 channel = connection.channel()
-channel.queue_declare(queue='insert_record', durable=True)
+channel.queue_declare(queue='item_creation', durable=True)
 
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5003)
+# Callback function for item creation
+def callback(ch, method, properties, body):
+    logging.info('Item creation callback function is called!')
+    data = json.loads(body)
+
+    if not connection.is_closed:
+        print("Item creation message received: ", data)
+        logging.info('Item creation message received: %s', data)
+    else:
+        print("Item creation unsuccessful! Connection not found!")
+        logging.error('Item creation unsuccessful! Connection not found!')
+
+    return "Item creation is done!"
+
+channel.basic_qos(prefetch_count=1)
+channel.basic_consume(queue='item_creation', 
+                      on_message_callback=callback, 
+                      auto_ack=True)
+
+print ('Starting consuming')
+logging.info('Starting consuming')
+
+channel.start_consuming()
+
+channel.close() # close channel on exit
