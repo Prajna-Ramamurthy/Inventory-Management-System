@@ -1,10 +1,21 @@
+from flask import Flask
 import pika, json
 import time
 import logging
+from database import db_session, init_db
+from entity import Inventory
 
 time.sleep(10)
 
+app = Flask(__name__)
+
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db_session.remove() # close db_session while shutting down application
+
+init_db()
 
 # Set up the RabbitMQ connection
 connection = pika.BlockingConnection(
@@ -20,6 +31,8 @@ def callback(ch, method, properties, body):
     if not connection.is_closed:
         print("Stock Management message received: ", data)
         logging.info('Stock Management message received: %s', data)
+        db_session.query(Inventory).filter(Inventory.sku == data['sku']).delete(synchronize_session='evaluate')
+        db_session.commit()
     else:
         print("Stock Management unsuccessful! Connection not found!")
         logging.error('Stock Management unsuccessful! Connection not found!')

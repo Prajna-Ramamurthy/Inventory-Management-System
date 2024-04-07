@@ -3,6 +3,7 @@ FROM python
 WORKDIR /app
 
 COPY ./consumer_three .
+COPY ./repository .
 RUN pip install -r requirements.txt
 
 
